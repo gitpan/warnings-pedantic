@@ -94,4 +94,31 @@ like(
 );
 $w = '';
 
+eval <<'EOP';
+my @a  = [];
+my @a2 = ([]);
+EOP
+
+$w =~ s/ at \(eval.+//;
+chomp($w);
+
+like(
+    $w,
+    qr/\A\QAssigning an arrayref to an array; did you mean (...) instead of [...]?\E\z/,
+    'ref_assignment warning works'
+);
+$w = '';
+
+eval <<'EOP';
+for (;;) { last; grep /42/, (1,2); (); last; }
+while () { last; grep /42/, (1,2); (); last; }
+EOP
+
+like(
+    $w,
+    qr/Unusual use of grep in void context.+Unusual use of grep in void context/sm,
+    "while(){} and for(;;) caused infinite loops in the opcode"
+);
+$w = '';
+
 done_testing;
